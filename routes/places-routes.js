@@ -22,8 +22,11 @@ router.get('/:pid', (req, res, next) => {
     const placeId = req.params.pid; // { pid: 'p1' }
     // find method helps us to find a specific element in an array
     const place = DUMMY_PLACES.find(p => {
-        return p.id === placeId; // p.id = place we are looking for. placeId = id part of our URL
+        return p.id === placeId; // p.id = id of the place we are looking for. placeId = id part of our URL
     });
+    if (!place) {
+        return res.status(404).json({ message: 'Could not find a place for the provided id.' });
+    }
     // res.json({ place: place });
     res.json({ place });
 });
@@ -34,6 +37,9 @@ router.get('/user/:uid', (req, res, next) => {
     const place = DUMMY_PLACES.find(p => {
         return p.creator === userId;
     });
+    if (!place) {
+        return res.status(404).json({ message: 'Could not find a place for the provided uid (user id).' });
+    }
     res.json({ place });
 });
 
