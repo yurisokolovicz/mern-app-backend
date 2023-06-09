@@ -25,7 +25,10 @@ router.get('/:pid', (req, res, next) => {
         return p.id === placeId; // p.id = id of the place we are looking for. placeId = id part of our URL
     });
     if (!place) {
-        return res.status(404).json({ message: 'Could not find a place for the provided id.' });
+        // trigger an error
+        const error = new Error('Could not find a place for the provided id.');
+        error.code = 404;
+        throw error; // We can use throw error to throw an error in synchronous code. throw is used in sync code.
     }
     // res.json({ place: place });
     res.json({ place });
@@ -38,7 +41,9 @@ router.get('/user/:uid', (req, res, next) => {
         return p.creator === userId;
     });
     if (!place) {
-        return res.status(404).json({ message: 'Could not find a place for the provided uid (user id).' });
+        const error = new Error('Could not find a place for the provided uid.');
+        error.code = 404;
+        return next(error); // We can use next() to forward the error to the next middleware. next is used in async code.
     }
     res.json({ place });
 });
