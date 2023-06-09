@@ -8,5 +8,7 @@ router.get('/:pid', placesControllers.getPlaceById);
 
 router.get('/user/:uid', placesControllers.getPlaceByUserId);
 
+router.post('/', placesControllers.createPlace);
+
 // Export the router to apps.js
 module.exports = router;

@@ -5,6 +5,10 @@ const placesRoutes = require('./routes/places-routes');
 
 const app = express();
 // Express will now only forward requests to placesRoutes (middleware) if the path starts with /api/places. It can be longer than that, but it has to start with /api/places.
+
+// It will parse any incoming request body and extract any JSON data there, convert to regular javascript data structures like objects and arrays and then call next automatically so we reach the next midleware in line and then also add this JSON data there.
+app.use(bodyParser.json());
+
 app.use('/api/places', placesRoutes); // => /api/places/...
 
 // Error handling middleware function - it will be executed on request that have an error.
