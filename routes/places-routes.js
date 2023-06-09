@@ -1,6 +1,8 @@
 // In the routes file I will set up the middleware that is responsible for handling routes related to places.
 const express = require('express');
 
+const HttpError = require('./../models/http-error');
+
 const router = express.Router();
 // It will later be replaced by a database
 const DUMMY_PLACES = [
@@ -26,9 +28,8 @@ router.get('/:pid', (req, res, next) => {
     });
     if (!place) {
         // trigger an error
-        const error = new Error('Could not find a place for the provided id.');
-        error.code = 404;
-        throw error; // We can use throw error to throw an error in synchronous code. throw is used in sync code.
+        throw new HttpError('Could not find a place for the provided id.', 404);
+        // throw error; // We can use throw error to throw an error in synchronous code.
     }
     // res.json({ place: place });
     res.json({ place });
@@ -41,9 +42,7 @@ router.get('/user/:uid', (req, res, next) => {
         return p.creator === userId;
     });
     if (!place) {
-        const error = new Error('Could not find a place for the provided uid.');
-        error.code = 404;
-        return next(error); // We can use next() to forward the error to the next middleware. next is used in async code.
+        return next(new HttpError('Could not find a place for the provided uid.', 404)); // We can use next() to forward the error to the next middleware. next is used in async code.
     }
     res.json({ place });
 });
