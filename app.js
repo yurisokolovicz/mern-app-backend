@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-// Importing the middleware
+// Importing middlewares
 const placesRoutes = require('./routes/places-routes');
 
 const app = express();

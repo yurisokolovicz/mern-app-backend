@@ -1,3 +1,4 @@
+// In the routes file I will set up the middleware that is responsible for handling routes related to places.
 const express = require('express');
 
 const router = express.Router();
@@ -23,7 +24,17 @@ router.get('/:pid', (req, res, next) => {
     const place = DUMMY_PLACES.find(p => {
         return p.id === placeId; // p.id = place we are looking for. placeId = id part of our URL
     });
-    res.json({ place: place });
+    // res.json({ place: place });
+    res.json({ place });
+});
+// TODO: Write a new route for GET request that is able to accept the following dynamic uid segment: /api/places/user/u1
+router.get('/user/:uid', (req, res, next) => {
+    const userId = req.params.uid;
+
+    const place = DUMMY_PLACES.find(p => {
+        return p.creator === userId;
+    });
+    res.json({ place });
 });
 
 // Export the router to apps.js
