@@ -33,16 +33,16 @@ const getPlaceById = (req, res, next) => {
     res.json({ place });
 };
 
-const getPlaceByUserId = (req, res, next) => {
+const getPlacesByUserId = (req, res, next) => {
     const userId = req.params.uid; // Data comes from URL.
 
-    const place = DUMMY_PLACES.find(p => {
+    const places = DUMMY_PLACES.filter(p => {
         return p.creator === userId;
     });
-    if (!place) {
-        return next(new HttpError('Could not find a place for the provided uid.', 404)); // We can use next() to forward the error to the next middleware. next is used in async code.
+    if (!places || places.length === 0) {
+        return next(new HttpError('Could not find places for the provided uid.', 404)); // We can use next() to forward the error to the next middleware. next is used in async code.
     }
-    res.json({ place });
+    res.json({ places });
 };
 // Midleware for create place at /api/places/
 // We encode data in the post request body (get request does not have request body - there is no data in the body)
@@ -92,7 +92,7 @@ const deletePlace = (req, res, next) => {
 // module.exports: only for single exports
 //// For more than 1 export we use a pointer to the function
 exports.getPlaceById = getPlaceById;
-exports.getPlaceByUserId = getPlaceByUserId;
+exports.getPlacesByUserId = getPlacesByUserId;
 exports.createPlace = createPlace;
 exports.updatePlace = updatePlace;
 exports.deletePlace = deletePlace;
