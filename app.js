@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 // Importing middlewares
 const placesRoutes = require('./routes/places-routes');
+const HttpError = require('./models/http-error');
 
 const app = express();
 // Express will now only forward requests to placesRoutes (middleware) if the path starts with /api/places. It can be longer than that, but it has to start with /api/places.
@@ -10,6 +11,11 @@ const app = express();
 app.use(bodyParser.json());
 
 app.use('/api/places', placesRoutes); // => /api/places/...
+
+app.use((req, res, next) => {
+    const error = new HttpError('Could not find this route', 404);
+    throw error; // It is sync code
+});
 
 // Error handling middleware function - it will be executed on request that have an error.
 app.use((error, req, res, next) => {
