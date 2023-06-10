@@ -65,9 +65,28 @@ const createPlace = (req, res, next) => {
     // Returning an object with the place property which holds the created place.
     res.status(201).json({ place: createdPlace }); // 201 if something was successfully created on the server.
 };
+// Patch request we have a request body.
+// The id we need for patch request is encoded in the URL
+const updatePlace = (req, res, next) => {
+    const { title, description } = req.body;
+    const placeId = req.params.pid; // its pid in the router
+
+    const updatedPlace = { ...DUMMY_PLACES.find(p => p.id === placeId) };
+    const placeIndex = DUMMY_PLACES.findIndex(p => p.id === placeId);
+    updatedPlace.title = title;
+    updatedPlace.description = description;
+
+    DUMMY_PLACES[placeIndex] = updatedPlace;
+    // Not 201 because we did not created any thing new, just changed something.
+    res.status(200).json({ place: updatedPlace });
+};
+
+const deletePlace = (req, res, next) => {};
 
 // module.exports: only for single exports
 //// For more than 1 export we use a pointer to the function
 exports.getPlaceById = getPlaceById;
 exports.getPlaceByUserId = getPlaceByUserId;
 exports.createPlace = createPlace;
+exports.updatePlace = updatePlace;
+exports.deletePlace = deletePlace;
