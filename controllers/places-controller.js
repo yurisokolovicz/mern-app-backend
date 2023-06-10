@@ -4,7 +4,7 @@ const { v4: uuid } = require('uuid');
 const HttpError = require('./../models/http-error');
 
 // It will later be replaced by a database
-const DUMMY_PLACES = [
+let DUMMY_PLACES = [
     {
         id: 'p1',
         title: 'Empire State Building',
@@ -81,7 +81,13 @@ const updatePlace = (req, res, next) => {
     res.status(200).json({ place: updatedPlace });
 };
 
-const deletePlace = (req, res, next) => {};
+const deletePlace = (req, res, next) => {
+    // 1st = extract the id of the url
+    const placeId = req.params.pid; // because it is pid in the routes file.
+    // All objects with ID other than placeId will be kept in the DUMMY_PLACES array, excluding the place with the corresponding ID.
+    DUMMY_PLACES = DUMMY_PLACES.filter(p => p.id !== placeId);
+    res.status(200).json({ message: 'Deleted place' });
+};
 
 // module.exports: only for single exports
 //// For more than 1 export we use a pointer to the function
