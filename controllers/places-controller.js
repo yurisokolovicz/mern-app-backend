@@ -1,5 +1,6 @@
 // In the Controller we have only the Midleware function, we don`t need to import Express!
 const { v4: uuid } = require('uuid');
+const { validationResult } = require('express-validator');
 
 const HttpError = require('./../models/http-error');
 
@@ -49,6 +50,11 @@ const getPlacesByUserId = (req, res, next) => {
 // For a POST request the data is in the body of the Post request.
 // To get the data out of the body we can use the bodyParser package.
 const createPlace = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log(errors);
+        throw new HttpError('Invalid inputs passed, please check your data', 422);
+    }
     // We use object destructuring to get different properties out of the request body and store it in constant which are then available in function.
     const { title, description, coordinates, address, creator } = req.body;
     // Or do const title = req.body.title for every propertie.
