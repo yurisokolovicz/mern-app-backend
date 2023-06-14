@@ -52,7 +52,6 @@ const getPlacesByUserId = (req, res, next) => {
 const createPlace = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        console.log(errors);
         throw new HttpError('Invalid inputs passed, please check your data', 422);
     }
     // We use object destructuring to get different properties out of the request body and store it in constant which are then available in function.
@@ -74,6 +73,10 @@ const createPlace = (req, res, next) => {
 // Patch request we have a request body.
 // The id we need for patch request is encoded in the URL
 const updatePlace = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        throw new HttpError('Invalid inputs passed, please check your data', 422);
+    }
     const { title, description } = req.body;
     const placeId = req.params.pid; // its pid in the router
 
@@ -90,6 +93,9 @@ const updatePlace = (req, res, next) => {
 const deletePlace = (req, res, next) => {
     // 1st = extract the id of the url
     const placeId = req.params.pid; // because it is pid in the routes file.
+    if (!DUMMY_PLACES.find(p => p.id === placeId)) {
+        throw new HttpError('Could not find a place for that id', 404);
+    }
     // All objects with ID other than placeId will be kept in the DUMMY_PLACES array, excluding the place with the corresponding ID.
     DUMMY_PLACES = DUMMY_PLACES.filter(p => p.id !== placeId);
     res.status(200).json({ message: 'Deleted place' });
