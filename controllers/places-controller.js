@@ -3,6 +3,7 @@ const { v4: uuid } = require('uuid');
 const { validationResult } = require('express-validator');
 
 const HttpError = require('./../models/http-error');
+const getCoordsForAddress = require('../util/location');
 
 // It will later be replaced by a database
 let DUMMY_PLACES = [
@@ -49,13 +50,21 @@ const getPlacesByUserId = (req, res, next) => {
 // We encode data in the post request body (get request does not have request body - there is no data in the body)
 // For a POST request the data is in the body of the Post request.
 // To get the data out of the body we can use the bodyParser package.
-const createPlace = (req, res, next) => {
+const createPlace = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        throw new HttpError('Invalid inputs passed, please check your data', 422);
+        return next(new HttpError('Invalid inputs passed, please check your data', 422));
     }
     // We use object destructuring to get different properties out of the request body and store it in constant which are then available in function.
-    const { title, description, coordinates, address, creator } = req.body;
+    const { title, description, address, creator } = req.body;
+
+    let coordinates;
+    try {
+        coordinates = await getCoordsForAddress(address);
+    } catch (error) {
+        return next(error);
+    }
+
     // Or do const title = req.body.title for every propertie.
     const createdPlace = {
         id: uuid(),
