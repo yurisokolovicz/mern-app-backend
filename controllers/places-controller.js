@@ -23,7 +23,7 @@ let DUMMY_PLACES = [
 
 const getPlaceById = async (req, res, next) => {
     const placeId = req.params.pid; // { pid: 'p1' }
-
+    // Mongoose setup
     let place;
     try {
         place = await Place.findById(placeId);
@@ -44,7 +44,7 @@ const getPlaceById = async (req, res, next) => {
 
 const getPlacesByUserId = async (req, res, next) => {
     const userId = req.params.uid; // Data comes from URL.
-
+    // Mongoose setup
     let places;
     try {
         places = await Place.find({ creator: userId });
@@ -54,8 +54,10 @@ const getPlacesByUserId = async (req, res, next) => {
     }
 
     if (!places || places.length === 0) {
-        return next(new HttpError('Could not find places for the provided uid.', 404)); // We can use next() to forward the error to the next middleware. next is used in async code.
+        const error = new HttpError('Could not find places for the provided uid.', 404);
+        return next(error);
     }
+
     res.json({ places: places.map(place => place.toObject({ getters: true })) });
 };
 // Midleware for create place at /api/places/
@@ -97,7 +99,7 @@ const createPlace = async (req, res, next) => {
 };
 // Patch request we have a request body.
 // The id we need for patch request is encoded in the URL
-const updatePlace = (req, res, next) => {
+const updatePlace = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         throw new HttpError('Invalid inputs passed, please check your data', 422);
@@ -105,14 +107,26 @@ const updatePlace = (req, res, next) => {
     const { title, description } = req.body;
     const placeId = req.params.pid; // its pid in the router
 
-    const updatedPlace = { ...DUMMY_PLACES.find(p => p.id === placeId) };
-    const placeIndex = DUMMY_PLACES.findIndex(p => p.id === placeId);
-    updatedPlace.title = title;
-    updatedPlace.description = description;
+    let place;
+    try {
+        place = await Place.findById(placeId);
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not update place', 500);
+        return next(error);
+    }
 
-    DUMMY_PLACES[placeIndex] = updatedPlace;
+    place.title = title;
+    place.description = description;
+    // store the data changes in the db
+    try {
+        await place.save();
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not update place', 500);
+        return next(error);
+    }
+
     // Not 201 because we did not created any thing new, just changed something.
-    res.status(200).json({ place: updatedPlace });
+    res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
 const deletePlace = (req, res, next) => {
