@@ -4,6 +4,7 @@ const { validationResult } = require('express-validator');
 
 const HttpError = require('./../models/http-error');
 const getCoordsForAddress = require('../util/location');
+const Place = require('../models/place');
 
 // It will later be replaced by a database
 let DUMMY_PLACES = [
@@ -65,18 +66,22 @@ const createPlace = async (req, res, next) => {
         return next(error);
     }
 
-    // Or do const title = req.body.title for every propertie.
-    const createdPlace = {
-        id: uuid(),
-        title: title,
-        description: description,
+    // Mongoose setup
+    const createdPlace = new Place({
+        title,
+        description,
+        address,
         location: coordinates,
-        address: address,
-        creator: creator
-    };
-    // Adding to our dummy_place data
-    DUMMY_PLACES.push(createdPlace); //unshift(createdPlace)
-    // Returning an object with the place property which holds the created place.
+        image: 'https://images.unsplash.com/photo-1666919643134-d97687c1826c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDF8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1171&q=80',
+        creator
+    });
+    try {
+        await createdPlace.save();
+    } catch (err) {
+        const error = new HttpError('Creating place failed, please try again.', 500);
+        return next(error);
+    }
+
     res.status(201).json({ place: createdPlace }); // 201 if something was successfully created on the server.
 };
 // Patch request we have a request body.
