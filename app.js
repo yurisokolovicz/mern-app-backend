@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 // Importing middlewares
 const placesRoutes = require('./routes/places-routes');
 const usersRoutes = require('./routes/users-routes');
@@ -29,4 +30,11 @@ app.use((error, req, res, next) => {
     res.json({ message: error.message || 'An unknown error occurred!' }); // Check if there is an message in the error object. If it doesn't exist, we set the message: 'An unknown error occurred!'
 });
 
-app.listen(5000);
+mongoose
+    .connect('mongodb+srv://yuri:qLLJkQ3EMDNuN4T2@cluster0.rmn8q1d.mongodb.net/places?retryWrites=true&w=majority')
+    .then(() => {
+        app.listen(5000);
+    })
+    .catch(err => {
+        console.log(err);
+    });
