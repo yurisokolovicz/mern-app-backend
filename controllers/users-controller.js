@@ -2,6 +2,7 @@ const { v4: uuid } = require('uuid');
 const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
+const User = require('../models/user');
 
 const DUMMY_USERS = [
     {
@@ -16,28 +17,44 @@ const getUsers = (req, res, next) => {
     res.json({ users: DUMMY_USERS });
 };
 
-const signup = (req, res, next) => {
+const signup = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        throw new HttpError('Invalid inputs passed, please check your data', 422);
+        return next(new HttpError('Invalid inputs passed, please check your data', 422));
     }
-    const { name, email, password } = req.body;
+    const { name, email, password, places } = req.body;
 
-    const createdUser = {
-        id: uuid(),
-        name, // name: name
+    let existingUser;
+    try {
+        existingUser = await User.findOne({ email: email });
+    } catch (err) {
+        const error = new HttpError('Sign up failed, please try again later', 500);
+        return next(error);
+    }
+    // If we have existingUser
+    if (existingUser) {
+        const error = new HttpError('User exists already, please login instead', 422);
+        return next(error);
+    }
+
+    // Later in the authentication we will encrypt the password, the way we did here it is not secure (store not encrypted password)
+    const createdUser = new User({
+        name,
         email,
-        password
-    };
-
-    const hasUser = DUMMY_USERS.find(u => u.email === email);
-    if (hasUser) {
-        throw new HttpError('Could not create user, email already exists', 422);
+        image: 'https://images.unsplash.com/photo-1686772939025-20195731d9f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80',
+        password,
+        places
+    });
+    // Saving the user
+    try {
+        await createdUser.save();
+    } catch (err) {
+        const error = new HttpError('Signing up failed, please try again', 500);
+        return next(error);
     }
-
-    DUMMY_USERS.push(createdUser);
-
-    res.status(201).json({ user: createdUser });
+    // converting mongoose object to default javascript object.
+    // getters: true, remove the _ from _id
+    res.status(201).json({ user: createdUser.toObject({ getters: true }) });
 };
 
 const login = (req, res, next) => {
