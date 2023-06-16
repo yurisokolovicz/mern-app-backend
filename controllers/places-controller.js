@@ -129,14 +129,25 @@ const updatePlace = async (req, res, next) => {
     res.status(200).json({ place: place.toObject({ getters: true }) });
 };
 
-const deletePlace = (req, res, next) => {
+const deletePlace = async (req, res, next) => {
     // 1st = extract the id of the url
     const placeId = req.params.pid; // because it is pid in the routes file.
-    if (!DUMMY_PLACES.find(p => p.id === placeId)) {
-        throw new HttpError('Could not find a place for that id', 404);
+    // defining the place
+    let place;
+    try {
+        place = await Place.findById(placeId);
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not delete place', 500);
+        return next(error);
     }
-    // All objects with ID other than placeId will be kept in the DUMMY_PLACES array, excluding the place with the corresponding ID.
-    DUMMY_PLACES = DUMMY_PLACES.filter(p => p.id !== placeId);
+    // deleting from db
+    try {
+        await place.deleteOne();
+    } catch (err) {
+        const error = new HttpError('Something went wrong, could not delete place', 500);
+        return next(error);
+    }
+
     res.status(200).json({ message: 'Deleted place' });
 };
 
