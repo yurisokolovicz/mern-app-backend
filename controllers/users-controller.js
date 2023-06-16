@@ -12,9 +12,20 @@ const DUMMY_USERS = [
         password: '123456'
     }
 ];
+// Send a request that returns all the users stored in db
+const getUsers = async (req, res, next) => {
+    // users = User.find({}, 'email name'); it is the same:
 
-const getUsers = (req, res, next) => {
-    res.json({ users: DUMMY_USERS });
+    let users;
+    try {
+        // returns all user object information except password
+        users = await User.find({}, '-password');
+        // users = User.find({}, 'email name'); it is the same:
+    } catch (err) {
+        const error = new HttpError('Fetching users failed, please try again later', 500);
+        return next(error);
+    }
+    res.json({ users: users.map(user => user.toObject({ getters: true })) });
 };
 
 const signup = async (req, res, next) => {
