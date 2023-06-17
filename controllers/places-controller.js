@@ -1,5 +1,5 @@
 // In the Controller we have only the Midleware function, we don`t need to import Express!
-const { v4: uuid } = require('uuid');
+// const { v4: uuid } = require('uuid');
 const { validationResult } = require('express-validator');
 const mongoose = require('mongoose');
 
@@ -161,14 +161,27 @@ const deletePlace = async (req, res, next) => {
     // defining the place
     let place;
     try {
-        place = await Place.findById(placeId);
+        // populate allow to manipulate to a document stored in another collection. We need to delete the id of the user creator when delete a place is triggered
+        place = await Place.findById(placeId).populate('creator');
     } catch (err) {
         const error = new HttpError('Something went wrong, could not delete place', 500);
         return next(error);
     }
+    // check if a placeid really exist
+    if (!place) {
+        const error = new HttpError('Could not find place for this id', 404);
+        return next(error);
+    }
     // deleting from db
     try {
-        await place.deleteOne();
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await place.deleteOne({ session: sess });
+        // Delete place and remove the place from the user
+        place.creator.places.pull(place);
+        // Update the user with deleted placeId in the creator
+        await place.creator.save({ session: sess });
+        await sess.commitTransaction();
     } catch (err) {
         const error = new HttpError('Something went wrong, could not delete place', 500);
         return next(error);

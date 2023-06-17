@@ -1,17 +1,17 @@
-const { v4: uuid } = require('uuid');
+// const { v4: uuid } = require('uuid');
 const { validationResult } = require('express-validator');
 
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
 
-const DUMMY_USERS = [
-    {
-        id: 'u1',
-        name: 'Yuri Andrade',
-        email: 'test@test.com',
-        password: '123456'
-    }
-];
+// const DUMMY_USERS = [
+//     {
+//         id: 'u1',
+//         name: 'Yuri Andrade',
+//         email: 'test@test.com',
+//         password: '123456'
+//     }
+// ];
 // Send a request that returns all the users stored in db
 const getUsers = async (req, res, next) => {
     // users = User.find({}, 'email name'); it is the same:
