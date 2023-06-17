@@ -47,20 +47,22 @@ const getPlaceById = async (req, res, next) => {
 const getPlacesByUserId = async (req, res, next) => {
     const userId = req.params.uid; // Data comes from URL.
     // Mongoose setup
-    let places;
+    // let places;
+    let userWithPlaces;
     try {
-        places = await Place.find({ creator: userId });
+        // places = await Place.find({ creator: userId });
+        userWithPlaces = await User.findById(userId).populate('places');
     } catch (err) {
         const error = new HttpError('Fetching places failed, please try again later', 500);
         return next(error);
     }
 
-    if (!places || places.length === 0) {
+    if (!userWithPlaces || userWithPlaces.length === 0) {
         const error = new HttpError('Could not find places for the provided uid.', 404);
         return next(error);
     }
 
-    res.json({ places: places.map(place => place.toObject({ getters: true })) });
+    res.json({ places: userWithPlaces.places.map(place => place.toObject({ getters: true })) });
 };
 // Midleware for create place at /api/places/
 // We encode data in the post request body (get request does not have request body - there is no data in the body)
